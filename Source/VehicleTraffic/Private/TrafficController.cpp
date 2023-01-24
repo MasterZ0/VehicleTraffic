@@ -1,38 +1,57 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "TrafficController.h"
 
-// Sets default values for this component's properties
 UTrafficController::UTrafficController()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
-void UTrafficController::Init(TArray<UTrafficLight*> _traffics)
-{
-	this->Traffics = _traffics;
-}
-
-// Called when the game starts
 void UTrafficController::BeginPlay()
 {
-	Super::BeginPlay();
-
-	// ...
-	
+	this->traffics = TArray<UTrafficLight*>();
 }
 
+void UTrafficController::AddTrafficLightActor(AActor* actor)
+{
+	if (actor == nullptr) 
+	{
+		throw "Null Reference";
+	}
 
-// Called every frame
+	UTrafficLight* trafficLight = Cast<UTrafficLight>(actor->GetComponentByClass(UTrafficLight::StaticClass()));
+
+	if (trafficLight == nullptr)
+	{
+		throw "Null Component";
+	}
+
+	this->traffics.Add(trafficLight);
+
+	// Check if has any TrafficLight open
+	if (!this->started)
+	{
+		this->started = true;
+		this->traffics[0]->Open();
+	}
+}
+
 void UTrafficController::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
-}
+	if (!this->started)
+		return;
 
+	// Check if the current is closed
+	if (this->traffics[this->currentIndex]->TrafficClosed())
+	{
+		// Update index
+		this->currentIndex++;
+
+		if (this->currentIndex >= this->traffics.Num()) {
+			this->currentIndex = 0;
+		}
+
+		// Open next traffic light
+		this->traffics[currentIndex]->Open();
+	}
+}
