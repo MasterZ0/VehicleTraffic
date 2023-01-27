@@ -23,18 +23,26 @@ class VEHICLETRAFFIC_API UBTTask_FollowSpline : public UBTTask_ActionTaskBase
 	GENERATED_BODY()
 	
 public:
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	FBlackboardKeySelector SplineKey;
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	FBlackboardKeySelector OffsetKey;
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	FBlackboardKeySelector SpeedKey;
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	FBlackboardKeySelector InverseKey;
 
 	UBTTask_FollowSpline(const FObjectInitializer& ObjectInitializer);
 
-	EBTNodeResult::Type Start(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-	EBTNodeResult::Type Update(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+	void Start(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+	void Tick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
 private:
-	float TravelDistance;
-	bool Inverse;
-	USplineComponent* Spline;
 	AActor* Actor;
-
+	USplineComponent* Spline;
 	FVector Offset;
+
+	float TravelDistance;
 	float Speed;
+	bool Inverse;
 };

@@ -10,13 +10,13 @@ void USplineLibrary::GetDistanceAlongSplineAtLocation(const USplineComponent* sp
 }
 
 void USplineLibrary::GetPathDirection(const USplineComponent* spline, const FVector agentPosition, const FRotator agentRotation,
-	FRotator& outRotation, float& travelDistance, bool& inverse)
+	float& travelDistance, bool& inverse)
 {
 	//float inputKey = spline->FindInputKeyClosestToWorldLocation(agentPosition);
 	//travelDistance = spline->GetDistanceAlongSplineAtSplineInputKey(inputKey);
 	GetDistanceAlongSplineAtLocation(spline, agentPosition, travelDistance);
 
-	outRotation = spline->GetRotationAtDistanceAlongSpline(travelDistance, ESplineCoordinateSpace::World);
+	FRotator outRotation = spline->GetRotationAtDistanceAlongSpline(travelDistance, ESplineCoordinateSpace::World);
 
 	float angle = agentRotation.Yaw - outRotation.Yaw;
 	inverse = FMath::Abs(angle) > 90.0f;
@@ -25,6 +25,11 @@ void USplineLibrary::GetPathDirection(const USplineComponent* spline, const FVec
 void USplineLibrary::FollowPath(const USplineComponent* spline, const FVector offset, const float speed, const float distance, const float delta, const bool inverse,
 	FVector& outPosition, FRotator& outRotation, float& newDistance)
 {
+	if (!spline)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "[USplineLibrary::FollowPath] Null Reference");
+		return;
+	}
 
 	float splineDistance = spline->GetSplineLength();
 	FRotator extraRotator;

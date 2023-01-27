@@ -36,8 +36,8 @@ public:
 
 	UBTTask_SwitchSpline(const FObjectInitializer& ObjectInitializer);
 
-	EBTNodeResult::Type Start(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-	EBTNodeResult::Type Update(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+	void Start(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+	void Tick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float Delta) override;
 
 	void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult) override;
 };

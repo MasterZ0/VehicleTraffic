@@ -10,42 +10,26 @@
  * Should be similar to -> UBTTask_BlueprintBase
  */
 UCLASS()
-class VEHICLETRAFFIC_API UBTTask_ActionTaskBase : public UBTTask_BlackboardBase
+class VEHICLETRAFFIC_API UBTTask_ActionTaskBase : public UBTTaskNode
 {
 	GENERATED_BODY()
 
-	virtual EBTNodeResult::Type Start(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
-	{
-		return EBTNodeResult::Type::InProgress;
-	}
+protected:
+	UBTTask_ActionTaskBase(const FObjectInitializer& ObjectInitializer);
 
-	virtual EBTNodeResult::Type Update(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
-	{
-		return EBTNodeResult::Type::InProgress;
-	}
+	virtual void Start(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) {}
 
-	/*UFUNCTION(BlueprintCallable, Category = "AI|BehaviorTree")
-		virtual void FinishExecute(bool Success = true);
-
-	UFUNCTION(BlueprintImplementableEvent, Category = AI)
-		virtual void ReceiveExecuteAI(AAIController* OwnerController, AActor* ControlledPawn);
-
-	UFUNCTION(BlueprintImplementableEvent)
-		virtual void ReceiveTick(AActor* OwnerActor, float DeltaSeconds);
-
-	UFUNCTION(BlueprintImplementableEvent, Category = AI)
-		virtual void ReceiveTickAI(AAIController* OwnerController, AActor* ControlledPawn, float DeltaSeconds);
-
-	UFUNCTION(BlueprintImplementableEvent)
-		virtual void ReceiveExecute(AActor* OwnerActor);*/
+	virtual void Tick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) {}
 	
 	virtual void Stop() { }
 
-public:
-
 	EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
+	void EndTask(bool Success = true);
+
+	void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+
 private:
-	bool running;
+	EBTNodeResult::Type State;
 
 };

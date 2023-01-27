@@ -7,29 +7,20 @@ UBTTask_WaitUntilTrigger::UBTTask_WaitUntilTrigger(const FObjectInitializer& Obj
 {
     bCreateNodeInstance = true;
     NodeName = "Wait Until Trigger";
-    this->triggered = false;
 }
 
-EBTNodeResult::Type UBTTask_WaitUntilTrigger::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+void UBTTask_WaitUntilTrigger::Start(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-    if (this->triggered)
-    {
-        this->triggered = false;
-        return EBTNodeResult::Type::Succeeded;
-    }
-
-    if (!this->registered)
-    {
-        TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &UBTTask_WaitUntilTrigger::OnOverlapBegin);
-        this->registered = true;
-    }
-
-    return EBTNodeResult::Type::InProgress;
+    TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &UBTTask_WaitUntilTrigger::OnOverlapBegin);
 }
 
 void UBTTask_WaitUntilTrigger::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
     TriggerBox->OnComponentBeginOverlap.RemoveDynamic(this, &UBTTask_WaitUntilTrigger::OnOverlapBegin);
-    this->registered = false;
-    this->triggered = true;
+    EndTask(true);
+}
+
+void UBTTask_WaitUntilTrigger::Stop() 
+{
+    TriggerBox->OnComponentBeginOverlap.RemoveDynamic(this, &UBTTask_WaitUntilTrigger::OnOverlapBegin);
 }

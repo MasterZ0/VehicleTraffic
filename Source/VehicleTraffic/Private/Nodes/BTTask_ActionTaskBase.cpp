@@ -3,25 +3,40 @@
 
 #include "Nodes/BTTask_ActionTaskBase.h"
 
+UBTTask_ActionTaskBase::UBTTask_ActionTaskBase(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+	bNotifyTick = true;
+	bNotifyTaskFinished = true;
+	bCreateNodeInstance = true;
+}
+
 EBTNodeResult::Type UBTTask_ActionTaskBase::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// Call Start at the first time
-	if (!this->running)
+	State = EBTNodeResult::Type::InProgress;
+
+	Start(OwnerComp, NodeMemory);
+
+	if (State != EBTNodeResult::Type::InProgress)
 	{
-		EBTNodeResult::Type result = this->Start(OwnerComp, NodeMemory);
-
-		if (result != EBTNodeResult::Type::InProgress)
-			return result;
-
-		this->running = true;
+		Stop();
 	}
 
-	EBTNodeResult::Type result = this->Update(OwnerComp, NodeMemory);
+	return State;
+}
 
-	if (result != EBTNodeResult::Type::InProgress)
+void UBTTask_ActionTaskBase::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+{
+	Tick(OwnerComp, NodeMemory, DeltaSeconds);
+
+	if (State != EBTNodeResult::Type::InProgress) 
 	{
-		this->running = false;
+		Stop();
+		UBTTaskNode* TemplateNode = (UBTTaskNode*)OwnerComp.FindTemplateNode(this);
+		OwnerComp.OnTaskFinished(TemplateNode, State);
 	}
+}
 
-	return result;
+void UBTTask_ActionTaskBase::EndTask(bool Success)
+{
+	State = Success ? EBTNodeResult::Type::Succeeded : EBTNodeResult::Type::Failed;
 }

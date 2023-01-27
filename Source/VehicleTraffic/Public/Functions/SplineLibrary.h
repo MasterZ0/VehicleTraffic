@@ -26,5 +26,5 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "_Vehicle Traffic\Spline Library")
 	static void GetPathDirection(const USplineComponent* spline, const FVector agentPosition, const FRotator agentRotation, 
-		FRotator& outRotation, float& travelDistance, bool& inverse);
+		float& travelDistance, bool& inverse);
 };

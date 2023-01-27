@@ -6,7 +6,7 @@
 #include "CoreMinimal.h"
 #include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
 
-#include "AIController.h"
+#include "BTTask_ActionTaskBase.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
 
@@ -15,7 +15,7 @@
  * 
  */
 UCLASS()
-class VEHICLETRAFFIC_API UBTTask_WaitUntilTrigger : public UBTTask_BlackboardBase
+class VEHICLETRAFFIC_API UBTTask_WaitUntilTrigger : public UBTTask_ActionTaskBase
 {
 	GENERATED_BODY()
 
@@ -23,14 +23,11 @@ public:
 
 	UBTTask_WaitUntilTrigger(const FObjectInitializer& ObjectInitializer);
 
-	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+	void Start(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+	void Stop() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trigger")
 	UBoxComponent* TriggerBox;
-
-private:
-	bool triggered;
-	bool registered;
 
 	UFUNCTION()
 		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

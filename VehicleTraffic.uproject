@@ -12,7 +12,8 @@
 				"Engine",
 				"AIModule",
 				"PhysXVehicles",
-				"GameplayTasks"
+				"GameplayTasks",
+				"UMG"
 			]
 		}
 	],
@@ -23,6 +24,10 @@
 		},
 		{
 			"Name": "RawInput",
+			"Enabled": true
+		},
+		{
+			"Name": "CommonUI",
 			"Enabled": true
 		}
 	]

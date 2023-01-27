@@ -8,13 +8,16 @@ UBTTask_SwitchSpline::UBTTask_SwitchSpline(const FObjectInitializer& ObjectIniti
 	NodeName = "Switch Path";
 }
 
-EBTNodeResult::Type UBTTask_SwitchSpline::Start(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+void UBTTask_SwitchSpline::Start(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
     const UBlackboardComponent* MyBlackboard = OwnerComp.GetBlackboardComponent();
     AAIController* MyController = OwnerComp.GetAIOwner();
 
     if (!MyController || !MyBlackboard)
-        return EBTNodeResult::Type::Failed;
+    {
+        EndTask(false);
+        return;
+    }
 
     // OwnerComp.GetAIOwner()->GetPawn()->GetActorLocation()
     Actor = OwnerComp.GetOwner();
@@ -44,13 +47,11 @@ EBTNodeResult::Type UBTTask_SwitchSpline::Start(UBehaviorTreeComponent& OwnerCom
     FVector offsetVector = targetRotation.RotateVector(Offset);
 
     bezierCurve = new BezierCurve(Actor->GetActorLocation(), Actor->GetActorRotation(), targetPosition + offsetVector, targetRotation, CurveSmooth);
-
-    return EBTNodeResult::InProgress;
 }
 
-EBTNodeResult::Type UBTTask_SwitchSpline::Update(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+void UBTTask_SwitchSpline::Tick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float Delta)
 {
-    float DeltaSpeed = Speed * Actor->GetWorld()->DeltaTimeSeconds;
+    float DeltaSpeed = Speed * Delta;
     FVector oldPosition = Actor->GetActorLocation();
 
     // Update Travel Distance
@@ -68,10 +69,10 @@ EBTNodeResult::Type UBTTask_SwitchSpline::Update(UBehaviorTreeComponent& OwnerCo
     //agent.rotation = Quaternion.Euler(agent.rotation.eulerAngles.x, targetRotation.eulerAngles.y, agent.rotation.eulerAngles.z);
 
     // Check if the agent has reached the end of the curve
-    if (FVector::Distance(newPosition, bezierCurve->endPosition) <= DeltaSpeed)
-        return EBTNodeResult::Type::Succeeded;
-
-    return EBTNodeResult::Type::InProgress;
+    if (FVector::Distance(newPosition, bezierCurve->endPosition) <= DeltaSpeed) 
+    {
+        EndTask(true);
+    }
 }
 
 void UBTTask_SwitchSpline::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
