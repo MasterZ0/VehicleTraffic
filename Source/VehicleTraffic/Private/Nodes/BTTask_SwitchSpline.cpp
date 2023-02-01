@@ -5,77 +5,44 @@
 UBTTask_SwitchSpline::UBTTask_SwitchSpline(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	bCreateNodeInstance = true;
-	NodeName = "Switch Path";
+	NodeName = "Switch Spline";
 }
 
 void UBTTask_SwitchSpline::Start(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-    const UBlackboardComponent* MyBlackboard = OwnerComp.GetBlackboardComponent();
-    AAIController* MyController = OwnerComp.GetAIOwner();
+    const UBlackboardComponent* Blackboard = OwnerComp.GetBlackboardComponent();
+    Actor = OwnerComp.GetAIOwner()->GetPawn();
 
-    if (!MyController || !MyBlackboard)
+    if (!Actor || !Blackboard)
     {
         EndTask(false);
         return;
     }
 
-    // OwnerComp.GetAIOwner()->GetPawn()->GetActorLocation()
-    Actor = OwnerComp.GetOwner();
-    
-    USplineLibrary::GetDistanceAlongSplineAtLocation(Spline, Actor->GetActorLocation(), TravelDistance);
+    Spline = Cast<USplineComponent>(Blackboard->GetValueAsObject(SplineKey.SelectedKeyName));
+    Offset = Blackboard->GetValueAsVector(OffsetKey.SelectedKeyName);
+    Speed = Blackboard->GetValueAsFloat(SpeedKey.SelectedKeyName);
+    CurveSmooth = Blackboard->GetValueAsFloat(CurveSmoothKey.SelectedKeyName);
 
-    FVector closestPoint = Spline->GetWorldLocationAtDistanceAlongSpline(TravelDistance);
+    TravelDistance = 0;
 
-    // Get the distance of the point, this will be used to create a symmetrical curve
-    float distance = (closestPoint - Actor->GetActorLocation()).Size();
+    bool GoRight = FMath::RandRange(0, 2) == 0;
 
-    // Randomize path direction
-    FRotator randomRotation = FRotator::ZeroRotator;
-    if (FMath::RandRange(0, 2) == 0)
-    {
-        distance *= -1;
-        randomRotation = FRotator(0, 180, 0);
-    }
-
-    // Calculate the target position and rotation
-    FVector targetPosition = Spline->GetWorldLocationAtDistanceAlongSpline(TravelDistance + distance);
-
-    FRotator targetRotation = Spline->GetWorldRotationAtDistanceAlongSpline(TravelDistance + distance);
-    targetRotation = FRotator(FQuat(targetRotation) * FQuat(randomRotation));
-
-    // Creates a curve with tangents based on the position and rotation of the startPoint and endPoint
-    FVector offsetVector = targetRotation.RotateVector(Offset);
-
-    bezierCurve = new BezierCurve(Actor->GetActorLocation(), Actor->GetActorRotation(), targetPosition + offsetVector, targetRotation, CurveSmooth);
+    USplineLibrary::CreateBezierTransition(Spline, Actor->GetActorLocation(), Actor->GetActorRotation(), Offset, Speed, CurveSmooth, GoRight, BezierCurve);
 }
 
 void UBTTask_SwitchSpline::Tick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float Delta)
 {
-    float DeltaSpeed = Speed * Delta;
-    FVector oldPosition = Actor->GetActorLocation();
+    FVector NewPosition;
+    FRotator NewRotation;
 
-    // Update Travel Distance
-    TravelDistance += DeltaSpeed;
-    FVector newPosition = bezierCurve->GetPointAtDistance(TravelDistance);
-    Actor->SetActorLocation(newPosition);
+    USplineLibrary::FollowBezier(BezierCurve, Actor->GetActorLocation(), Speed, TravelDistance, Delta, NewPosition, NewRotation, TravelDistance);
 
-    // Rotate the agent to look towards the new position
-    FVector direction = (newPosition - oldPosition).GetSafeNormal();
-
-    FRotator targetRotation = FRotationMatrix::MakeFromX(direction).Rotator();
-    Actor->SetActorRotation(targetRotation);
-
-    //Quaternion targetRotation = Quaternion.LookRotation(direction, agent.up);
-    //agent.rotation = Quaternion.Euler(agent.rotation.eulerAngles.x, targetRotation.eulerAngles.y, agent.rotation.eulerAngles.z);
+    this->Actor->SetActorLocationAndRotation(NewPosition, NewRotation, false, 0, ETeleportType::TeleportPhysics);
 
     // Check if the agent has reached the end of the curve
-    if (FVector::Distance(newPosition, bezierCurve->endPosition) <= DeltaSpeed) 
+    if (FVector::Distance(NewPosition, BezierCurve.EndLocation) <= Delta * Speed)
     {
         EndTask(true);
     }
-}
-
-void UBTTask_SwitchSpline::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
-{
-    delete bezierCurve;
 }

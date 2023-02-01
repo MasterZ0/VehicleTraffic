@@ -20,6 +20,10 @@ public:
 	int DriftPoints;
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Settings")
 	FVector OffsetRoad;
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Settings")
+	float ChanceToSwitchSpline;
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Settings")
+	float DelayToSwitchSpline;
 
 	// Movement
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Movement")
@@ -44,4 +48,6 @@ public:
 	float RotationSpeed;
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Rotation")
 	float CurveSmooth;
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Rotation")
+	float MaxDriftRotation;
 };

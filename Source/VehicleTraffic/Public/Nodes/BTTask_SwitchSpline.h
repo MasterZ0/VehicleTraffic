@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SplineComponent.h"
+#include "AIController.h"
 
 #include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -24,20 +25,26 @@ class VEHICLETRAFFIC_API UBTTask_SwitchSpline : public UBTTask_ActionTaskBase
 
 public:
 
-	USplineComponent* Spline;
-	AActor* Actor;
-	float TravelDistance;
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	FBlackboardKeySelector SplineKey;
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	FBlackboardKeySelector OffsetKey;
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	FBlackboardKeySelector CurveSmoothKey;
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	FBlackboardKeySelector SpeedKey;
 
+	USplineComponent* Spline;
 	FVector Offset;
 	float CurveSmooth;
 	float Speed;
 
-	BezierCurve* bezierCurve;
+	AActor* Actor;
+	float TravelDistance;
+	FBezierCurve BezierCurve;
 
 	UBTTask_SwitchSpline(const FObjectInitializer& ObjectInitializer);
 
 	void Start(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	void Tick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float Delta) override;
-
-	void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult) override;
 };

@@ -27,8 +27,18 @@ public:
 	void Stop() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trigger")
-	UBoxComponent* TriggerBox;
+	FBlackboardKeySelector ComponentToOverlap;
+
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	UClass* ClassType; // UClass?
+
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	FBlackboardKeySelector ReturnValue;
+
+private:
+	TWeakObjectPtr<UBehaviorTreeComponent> LocalOwnerComp;
+	UPrimitiveComponent* PrimitiveComponent;
 
 	UFUNCTION()
-		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };

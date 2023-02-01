@@ -2,59 +2,70 @@
 
 #include "Classes/BezierCurve.h"
 
-BezierCurve::BezierCurve() { }
+FBezierCurve::FBezierCurve() { }
 
-BezierCurve::BezierCurve(FVector startPosition, FRotator startRotation, FVector endPosition, FRotator endRotation, float weight)
+FBezierCurve::FBezierCurve(FVector CurrentLocation, FRotator CurrentRotation, FVector TargetLocation, FRotator TargetRotation, float Weight)
 {
-    this->startPosition = startPosition;
-    this->endPosition = endPosition;
+    StartLocation = CurrentLocation;
+    EndLocation = TargetLocation;
 
-    float distanceMultiplier = (startPosition - endPosition).Size() / 2.f;
+    float DistanceMultiplier = (CurrentLocation - TargetLocation).Size() / 2.f;
 
-    startTangent = startPosition + (startRotation.RotateVector(FVector::ForwardVector) * distanceMultiplier * weight);
-    endTangent = endPosition + (endRotation.RotateVector(FVector::BackwardVector) * distanceMultiplier * weight);
+    StartTangent = CurrentLocation + (CurrentRotation.RotateVector(FVector::ForwardVector) * DistanceMultiplier * Weight);
+    EndTangent = TargetLocation + (TargetRotation.RotateVector(FVector::BackwardVector) * DistanceMultiplier * Weight);
 
-    length = CalculateCurveLength(Resolution);
+    Length = CalculateCurveLength(DefaultResolution);
 }
 
-BezierCurve::~BezierCurve() { }
+FBezierCurve::~FBezierCurve() { }
 
-FVector BezierCurve::GetPointAtDistance(float distance)
+FVector FBezierCurve::GetPointAtDistance(float Distance)
 {
-    float t = distance / length;
-    return GetTransitionPoint(t);
+    float T = Distance / Length;
+    return GetTransitionPoint(T);
 }
 
-FVector BezierCurve::GetTransitionPoint(float transition)
+FVector FBezierCurve::GetTransitionPoint(float Transition)
 {
-    return CalculateCubicBezierPoint(transition, startPosition, startTangent, endTangent, endPosition);
+    return CalculateCubicBezierPoint(Transition, StartLocation, StartTangent, EndTangent, EndLocation);
 }
 
-FVector BezierCurve::CalculateCubicBezierPoint(float t, FVector p0, FVector p1, FVector p2, FVector p3)
+FVector FBezierCurve::CalculateCubicBezierPoint(float T, FVector P0, FVector P1, FVector P2, FVector P3)
 {
-    float u = 1 - t;
+    float u = 1 - T;
     float uu = u * u;
     float uuu = uu * u;
 
-    float tt = t * t;
-    float ttt = tt * t;
+    float tt = T * T;
+    float ttt = tt * T;
 
-    return (uuu * p0) + (3 * uu * t * p1) + (3 * u * tt * p2) + (ttt * p3);
+    return (uuu * P0) + (3 * uu * T * P1) + (3 * u * tt * P2) + (ttt * P3);
 }
 
-float BezierCurve::CalculateCurveLength(int resolution)
+float FBezierCurve::CalculateCurveLength(int Resolution)
 {
-    float transitionSize = 1.f / resolution;
+    float transitionSize = 1.f / Resolution;
     float curveLength = 0;
-    FVector previousPosition = startPosition;
+    FVector previousPosition = StartLocation;
 
-    for (int i = 1; i <= resolution; i++)
+    for (int i = 1; i <= Resolution; i++)
     {
         float t = i * transitionSize;
-        FVector newPosition = CalculateCubicBezierPoint(t, startPosition, startTangent, endTangent, endPosition);
+        FVector newPosition = CalculateCubicBezierPoint(t, StartLocation, StartTangent, EndTangent, EndLocation);
         curveLength += FVector::Distance(previousPosition, newPosition);
         previousPosition = newPosition;
     }
 
     return curveLength;
+}
+
+FBezierCurve& FBezierCurve::operator=(const FBezierCurve& Other)
+{
+    this->StartLocation = Other.StartLocation;
+    this->StartTangent = Other.StartTangent;
+    this->EndTangent = Other.EndTangent;
+    this->EndLocation = Other.EndLocation;
+    this->Length = Other.Length;
+
+    return *this;
 }

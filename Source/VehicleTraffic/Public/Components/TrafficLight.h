@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Components/BoxComponent.h"
 #include <Components/SplineComponent.h>
 #include "TrafficLight.generated.h"
 
@@ -24,7 +25,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TrafficLight")
 		float greenDuration;
-
 
 private:
 	UPROPERTY(VisibleInstanceOnly, Category = "TrafficLight")

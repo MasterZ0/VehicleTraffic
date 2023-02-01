@@ -13,7 +13,8 @@
 				"AIModule",
 				"PhysXVehicles",
 				"GameplayTasks",
-				"UMG"
+				"UMG",
+				"CoreUObject"
 			]
 		}
 	],

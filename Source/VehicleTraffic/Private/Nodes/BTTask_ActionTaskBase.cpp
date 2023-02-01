@@ -31,8 +31,7 @@ void UBTTask_ActionTaskBase::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* 
 	if (State != EBTNodeResult::Type::InProgress) 
 	{
 		Stop();
-		UBTTaskNode* TemplateNode = (UBTTaskNode*)OwnerComp.FindTemplateNode(this);
-		OwnerComp.OnTaskFinished(TemplateNode, State);
+		FinishLatentTask(OwnerComp, State);
 	}
 }
 

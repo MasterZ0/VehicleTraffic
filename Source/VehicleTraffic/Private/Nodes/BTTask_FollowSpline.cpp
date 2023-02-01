@@ -43,5 +43,5 @@ void UBTTask_FollowSpline::Tick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 
 	USplineLibrary::FollowPath(Spline, Offset, Speed, TravelDistance, Delta, Inverse, OutLocation, OutRotation, TravelDistance);
 
-	this->Actor->SetActorLocationAndRotation(OutLocation, OutRotation, false, nullptr, ETeleportType::TeleportPhysics);
+	this->Actor->SetActorLocationAndRotation(OutLocation, OutRotation, false, 0, ETeleportType::TeleportPhysics);
 }

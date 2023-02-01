@@ -4,30 +4,27 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "IDrift.generated.h"
+#include "Drift.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UIDrift : public UInterface
+class UDrift : public UInterface
 {
 	GENERATED_BODY()
-
-
 };
 
 /**
  * 
  */
-class VEHICLETRAFFIC_API IIDrift
+class VEHICLETRAFFIC_API IDrift
 {
 	GENERATED_BODY()
 
 public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Vehicle Traffic\Interfaces")
-		void OnEnterDriftArea();
+	void OnEnterDriftArea();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Vehicle Traffic\Interfaces")
-		void OnExitDriftArea();
-
+	void OnExitDriftArea();
 };

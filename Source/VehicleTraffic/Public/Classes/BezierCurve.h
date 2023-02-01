@@ -4,31 +4,34 @@
 
 #include "CoreMinimal.h"
 #include "Math/Vector.h"
+#include "BezierCurve.generated.h"
 
 /**
  * 
  */
-class VEHICLETRAFFIC_API BezierCurve
+USTRUCT(BlueprintType)
+struct VEHICLETRAFFIC_API FBezierCurve
 {
-
+    GENERATED_BODY()
 public:
 
-    FVector startPosition;
-    FVector startTangent;
+    FVector StartLocation;
+    FVector StartTangent;
 
-    FVector endTangent;
-    FVector endPosition;
+    FVector EndTangent;
+    FVector EndLocation;
 
-    float length;
-    const int Resolution = 20;
+    float Length;
+    const int DefaultResolution = 20;
 
-	BezierCurve();
-	~BezierCurve();
-    BezierCurve(FVector startPosition, FRotator startRotation, FVector endPosition, FRotator endRotation, float weight);
-	//~BezierCurve();
+	FBezierCurve();
+	~FBezierCurve();
+    FBezierCurve(FVector CurrentLocation, FRotator CurrentRotation, FVector TargetLocation, FRotator TargetRotation, float Weight);
 
-    FVector GetPointAtDistance(float distance);
-    float CalculateCurveLength(int resolution);
-    FVector GetTransitionPoint(float transition);
-    static FVector CalculateCubicBezierPoint(float t, FVector p0, FVector p1, FVector p2, FVector p3);
+    FVector GetPointAtDistance(float Distance);
+    float CalculateCurveLength(int Resolution);
+    FVector GetTransitionPoint(float Transition);
+    static FVector CalculateCubicBezierPoint(float T, FVector P0, FVector P1, FVector P2, FVector P3);
+
+    FBezierCurve& operator=(const FBezierCurve& Other);
 };
