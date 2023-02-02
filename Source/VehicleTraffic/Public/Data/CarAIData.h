@@ -37,6 +37,8 @@ public:
 
 	// Fuel
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Fuel")
+	float StartFuel;
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Fuel")
 	float MaxFuel;
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Fuel")
 	float MinFuelConsume;

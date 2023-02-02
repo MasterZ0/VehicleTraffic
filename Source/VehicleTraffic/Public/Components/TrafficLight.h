@@ -1,9 +1,11 @@
 #pragma once
 
+#include "Interfaces/Detectable.h"
+
 #include "CoreMinimal.h"
+#include <Components/SplineComponent.h>
 #include "Components/ActorComponent.h"
 #include "Components/BoxComponent.h"
-#include <Components/SplineComponent.h>
 #include "TrafficLight.generated.h"
 
 UENUM(BlueprintType)
@@ -15,46 +17,50 @@ enum class ETrafficState : uint8
 };
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class VEHICLETRAFFIC_API UTrafficLight : public UActorComponent
+class VEHICLETRAFFIC_API UTrafficLight : public UActorComponent, public IDetectable
 {
 	GENERATED_BODY()
 
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TrafficLight")
-		float yellowDuration;
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Traffic Light")
+	float YellowDuration;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TrafficLight")
-		float greenDuration;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Traffic Light")
+	float GreenDuration;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Traffic Light")
+	UPrimitiveComponent* TriggerComponent;
 
 private:
-	UPROPERTY(VisibleInstanceOnly, Category = "TrafficLight")
-		ETrafficState trafficState;
+	UPROPERTY(VisibleInstanceOnly, Category = "Traffic Light")
+	ETrafficState TrafficState;
 
-	UPROPERTY(VisibleInstanceOnly, Category = "TrafficLight")
-		float timer;
+	UPROPERTY(VisibleInstanceOnly, Category = "Traffic Light")
+	float Timer;
 
-	UStaticMeshComponent* red;
-	UStaticMeshComponent* yellow;
-	UStaticMeshComponent* green;
-	UStaticMeshComponent* currentLight;
+	UStaticMeshComponent* Red;
+	UStaticMeshComponent* Yellow;
+	UStaticMeshComponent* Green;
+	UStaticMeshComponent* CurrentLight;
 
 public:
 	UTrafficLight();
 
-	UFUNCTION(BlueprintCallable, Category = "TrafficLight")
-		void Init(UStaticMeshComponent* red, UStaticMeshComponent* yellow, UStaticMeshComponent* green);
+	UFUNCTION(BlueprintCallable, Category = "Vehicle Traffic\Traffic Light")
+	void Init(UStaticMeshComponent* InRed, UStaticMeshComponent* InYellow, UStaticMeshComponent* InGreen);
 
-	UFUNCTION(BlueprintCallable, Category = "TrafficLight")
-		void Open();
+	UFUNCTION(BlueprintCallable, Category = "Vehicle Traffic\Traffic Light")
+	void Open();
 
-	UFUNCTION(BlueprintCallable, Category = "TrafficLight")
-		ETrafficState GetTrafficState();
+	UFUNCTION(BlueprintCallable, Category = "Vehicle Traffic\Traffic Light")
+	ETrafficState GetTrafficState();
 
-	UFUNCTION(BlueprintCallable, Category = "TrafficLight")
-		bool TrafficClosed();
+	UFUNCTION(BlueprintCallable, Category = "Vehicle Traffic\Traffic Light")
+	bool TrafficClosed();
 
-	UFUNCTION(BlueprintCallable, Category = "TrafficLight")
-		void SwitchLight(UStaticMeshComponent* newLight, ETrafficState state);
-
+private:
+	void OnComponentCreated() override;
+	virtual void BeginPlay() override;
+	void SwitchLight(UStaticMeshComponent* NewLight, ETrafficState State);
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 };

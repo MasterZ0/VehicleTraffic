@@ -4,25 +4,32 @@
 
 UCarTriggerDetection::UCarTriggerDetection()
 {
-	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Front Detector"));
+	//PrimitiveComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Front Detector"));
 }
 
 void UCarTriggerDetection::OnComponentCreated()
 {
 	Super::OnComponentCreated();
 
-	USceneComponent* RootComponent = GetOwner()->GetRootComponent();
-	BoxComponent->SetupAttachment(RootComponent);
+	USceneComponent* Root = GetOwner()->GetRootComponent();
+
+	if (PrimitiveComponent) 
+	{
+		PrimitiveComponent->SetupAttachment(Root);
+	}
 }
 
 void UCarTriggerDetection::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (!PrimitiveComponent)
+		return;
+
 	Obstacles = TArray<AActor*>();
 
-	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnOverlapBeginFrontDetector);
-	BoxComponent->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnOverlapEndFrontDetector);
+	PrimitiveComponent->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnOverlapBeginFrontDetector);
+	PrimitiveComponent->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnOverlapEndFrontDetector);
 }
 
 bool UCarTriggerDetection::HasObstacle()
@@ -37,12 +44,15 @@ UTrafficLight* UCarTriggerDetection::GetTrafficLight()
 
 void UCarTriggerDetection::OnOverlapBeginFrontDetector(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UTrafficLight* Component = Cast<UTrafficLight>(OtherActor->GetComponentByClass(UTrafficLight::StaticClass()));
+	if (!OtherActor->GetClass()->ImplementsInterface(UDetectable::StaticClass()))
+		return;
+
+	UActorComponent* Component = OtherActor->GetComponentByClass(UTrafficLight::StaticClass());
 	if (IsValid(Component))
 	{
-		CurrentLight = Component;
+		CurrentLight = Cast<UTrafficLight>(Component);
 	}
-	else
+	else if (!Obstacles.Contains(OtherActor))
 	{
 		Obstacles.Add(OtherActor);
 	}
@@ -50,8 +60,11 @@ void UCarTriggerDetection::OnOverlapBeginFrontDetector(UPrimitiveComponent* Over
 
 void UCarTriggerDetection::OnOverlapEndFrontDetector(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	UTrafficLight* Component = Cast<UTrafficLight>(OtherActor->GetComponentByClass(UTrafficLight::StaticClass()));
-	if (CurrentLight == Component)
+	if (!OtherActor->GetClass()->ImplementsInterface(UDetectable::StaticClass()))
+		return;
+
+	UActorComponent* Component = OtherActor->GetComponentByClass(UTrafficLight::StaticClass());
+	if (CurrentLight && CurrentLight == Component)
 	{
 		CurrentLight = nullptr;
 	}

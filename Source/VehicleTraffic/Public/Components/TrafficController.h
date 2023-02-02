@@ -10,22 +10,21 @@ class VEHICLETRAFFIC_API UTrafficController : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:
-	TArray<UTrafficLight*> traffics;
-
 private:
-	int currentIndex;
-	bool started;
+	TArray<UTrafficLight*> Traffics;
+	int CurrentIndex;
 
 public:
 	UTrafficController();
 
 	UFUNCTION(BlueprintCallable, Category = "TrafficLight")
-		void AddTrafficLightActor(AActor* actor);
+	void AddTrafficLightActor(AActor* OwnerActor);
 
-protected:
-	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintCallable, Category = "TrafficLight")
+	void AddTrafficLight(UTrafficLight* NewTrafficLight);
 
 public:
+	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 };

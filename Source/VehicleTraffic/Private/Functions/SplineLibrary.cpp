@@ -1,93 +1,92 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Functions/SplineLibrary.h"
 
-void USplineLibrary::GetDistanceAlongSplineAtLocation(const USplineComponent* spline, const FVector agentPosition, float& travelDistance)
+void USplineLibrary::GetClosestDistanceToLocation(const USplineComponent* Spline, const FVector ActorLocation, float& TravelDistance)
 {
-	float inputKey = spline->FindInputKeyClosestToWorldLocation(agentPosition);
-	travelDistance = spline->GetDistanceAlongSplineAtSplineInputKey(inputKey);
+	float InputKey = Spline->FindInputKeyClosestToWorldLocation(ActorLocation);
+	TravelDistance = Spline->GetDistanceAlongSplineAtSplineInputKey(InputKey);
 }
 
-void USplineLibrary::GetPathDirection(const USplineComponent* Spline, const FVector ActorLocation, const FRotator ActorRotation,
+void USplineLibrary::GetSplineDirection(const USplineComponent* Spline, const FVector ActorLocation, const FRotator ActorRotation,
 	float& TravelDistance, bool& Inverse)
 {
-	GetDistanceAlongSplineAtLocation(Spline, ActorLocation, TravelDistance);
+	GetClosestDistanceToLocation(Spline, ActorLocation, TravelDistance);
 
 	FRotator OutRotation = Spline->GetRotationAtDistanceAlongSpline(TravelDistance, ESplineCoordinateSpace::World);
 	
 	float Angle = (ActorRotation - OutRotation).GetNormalized().Yaw;
 	Angle = FMath::UnwindDegrees(Angle);
-	//float Angle = ActorRotation.GetNormalized() - OutRotation.GetNormalized;
+
 	Inverse = FMath::Abs(Angle) > 90.0f;
 }
 
-void USplineLibrary::FollowPath(const USplineComponent* spline, const FVector offset, const float speed, const float distance, const float delta, const bool inverse,
-	FVector& outPosition, FRotator& outRotation, float& newDistance)
+void USplineLibrary::FollowSpline(const USplineComponent* Spline, const FVector Offset, const float Speed, const float TravelDistance, const float DeltaTime, const bool InverseSpline,
+	FVector& OutLocation, FRotator& OutRotation, float& OutTravelDistance)
 {
-	if (!spline)
+	if (!Spline)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "[USplineLibrary::FollowPath] Null Reference");
 		return;
 	}
 
-	float splineDistance = spline->GetSplineLength();
-	FRotator extraRotator;
-	if (inverse) 
+	float SplineDistance = Spline->GetSplineLength();
+	FRotator ExtraRotator;
+	if (InverseSpline)
 	{
-		newDistance = distance - speed * delta;
-		extraRotator = FRotator(0.f, 180.f, 0.f);
-		if (newDistance < 0)
+		OutTravelDistance = TravelDistance - Speed * DeltaTime;
+		ExtraRotator = FRotator(0.f, 180.f, 0.f);
+		if (OutTravelDistance < 0)
 		{
-			newDistance += splineDistance;
+			OutTravelDistance += SplineDistance;
 		}
 	}
 	else 
 	{
-		newDistance = distance + speed * delta;
-		extraRotator = FRotator(0.f, 0.f, 0.f);
-		if (newDistance >= splineDistance)
+		OutTravelDistance = TravelDistance + Speed * DeltaTime;
+		ExtraRotator = FRotator(0.f, 0.f, 0.f);
+		if (OutTravelDistance >= SplineDistance)
 		{
-			newDistance -= splineDistance;
+			OutTravelDistance -= SplineDistance;
 		}
 	}
 
-	FRotator newRotator = spline->GetWorldRotationAtDistanceAlongSpline(newDistance) + extraRotator;
-	FVector newPosition = spline->GetWorldLocationAtDistanceAlongSpline(newDistance);
+	FRotator NewRotator = Spline->GetWorldRotationAtDistanceAlongSpline(OutTravelDistance) + ExtraRotator;
+	FVector NewLocation = Spline->GetWorldLocationAtDistanceAlongSpline(OutTravelDistance);
 
-	outPosition = newPosition + (FQuat(newRotator) * offset);
-	outRotation = newRotator;
+	OutLocation = NewLocation + (FQuat(NewRotator) * Offset);
+	OutRotation = NewRotator;
 }
 
-void USplineLibrary::CreateBezierTransition(const USplineComponent* Spline, FVector CurrentPosition, FRotator CurrentRotation, FVector Offset, float Speed, float CurveSmooth, bool GoRight,
+void USplineLibrary::CreateBezierTransition(const USplineComponent* Spline, FVector ActorLocation, FRotator ActorRotation, FVector Offset, float Speed, float CurveSmooth, bool GoRight,
 	FBezierCurve& OutBezierCurve)
 {
 	float SplineTravelDistance = 0.f;
-	USplineLibrary::GetDistanceAlongSplineAtLocation(Spline, CurrentPosition, SplineTravelDistance);
+	USplineLibrary::GetClosestDistanceToLocation(Spline, ActorLocation, SplineTravelDistance);
 
 	FVector closestPoint = Spline->GetWorldLocationAtDistanceAlongSpline(SplineTravelDistance);
 
 	// Get the distance of the point, this will be used to create a symmetrical curve
-	float distance = (closestPoint - CurrentPosition).Size();
+	float TravelDistance = (closestPoint - ActorLocation).Size();
 
 	// Randomize path direction
-	FRotator randomRotation = FRotator::ZeroRotator;
+	FRotator ExtraRotation = FRotator::ZeroRotator;
 	if (GoRight)
 	{
-		distance *= -1;
-		randomRotation = FRotator(0, 180, 0);
+		TravelDistance *= -1;
+		ExtraRotation = FRotator(0, 180, 0);
 	}
 
 	// Calculate the target position and rotation
-	FVector targetPosition = Spline->GetWorldLocationAtDistanceAlongSpline(SplineTravelDistance + distance);
+	FVector TargetLocation = Spline->GetWorldLocationAtDistanceAlongSpline(SplineTravelDistance + TravelDistance);
 
-	FRotator targetRotation = Spline->GetWorldRotationAtDistanceAlongSpline(SplineTravelDistance + distance);
-	targetRotation = targetRotation + randomRotation;
+	FRotator TargetRotation = Spline->GetWorldRotationAtDistanceAlongSpline(SplineTravelDistance + TravelDistance);
+	TargetRotation = TargetRotation + ExtraRotation;
 
 	// Creates a curve with tangents based on the position and rotation of the startPoint and endPoint
-	FVector offsetVector = targetRotation.RotateVector(Offset);
+	FVector OffsetVector = TargetRotation.RotateVector(Offset);
 
-	OutBezierCurve = FBezierCurve(CurrentPosition, CurrentRotation, targetPosition + offsetVector, targetRotation, CurveSmooth);
+	OutBezierCurve = FBezierCurve(ActorLocation, ActorRotation, TargetLocation + OffsetVector, TargetRotation, CurveSmooth);
 }
 
 void USplineLibrary::FollowBezier(FBezierCurve BezierCurve, FVector CurrentPosition, const float Speed, const float TravelDistance, const float DeltaTimeSeconds,
@@ -105,7 +104,6 @@ void USplineLibrary::FollowBezier(FBezierCurve BezierCurve, FVector CurrentPosit
 	OutRotation = FRotationMatrix::MakeFromX(direction).Rotator();
 }
 
-
 void USplineLibrary::CalculateDrift(USplineComponent* Spline, float TravelDistance, float DeltaSpeed, float MaxAngle, bool InverseSpline, float& DriftDegree)
 {	
 	if (InverseSpline)
@@ -113,11 +111,11 @@ void USplineLibrary::CalculateDrift(USplineComponent* Spline, float TravelDistan
 		DeltaSpeed *= -1;
 	}
 
-	FRotator currentRotation = Spline->GetWorldRotationAtDistanceAlongSpline(TravelDistance);
-	FRotator targetRotation = Spline->GetWorldRotationAtDistanceAlongSpline(TravelDistance + DeltaSpeed);
+	FRotator CurrentRotation = Spline->GetWorldRotationAtDistanceAlongSpline(TravelDistance);
+	FRotator TargetRotation = Spline->GetWorldRotationAtDistanceAlongSpline(TravelDistance + DeltaSpeed);
 
-	float weight = FMath::FindDeltaAngle(currentRotation.Yaw, targetRotation.Yaw);
-	weight *= MaxAngle;
+	float Weight = FMath::FindDeltaAngle(CurrentRotation.Yaw, TargetRotation.Yaw);
+	Weight *= MaxAngle;
 
-	DriftDegree = FMath::Clamp(weight, -MaxAngle, MaxAngle);
+	DriftDegree = FMath::Clamp(Weight, -MaxAngle, MaxAngle);
 }

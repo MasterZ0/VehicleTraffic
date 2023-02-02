@@ -31,7 +31,7 @@ void UBTTask_FollowSpline::Start(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		return;
 	}
 
-	USplineLibrary::GetPathDirection(Spline, Actor->GetActorLocation(), Actor->GetActorRotation(), TravelDistance, Inverse);
+	USplineLibrary::GetSplineDirection(Spline, Actor->GetActorLocation(), Actor->GetActorRotation(), TravelDistance, Inverse);
 
 	Blackboard->SetValueAsBool(InverseKey.SelectedKeyName, Inverse);
 }
@@ -41,7 +41,7 @@ void UBTTask_FollowSpline::Tick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 	FVector OutLocation = FVector();
 	FRotator OutRotation = FRotator();
 
-	USplineLibrary::FollowPath(Spline, Offset, Speed, TravelDistance, Delta, Inverse, OutLocation, OutRotation, TravelDistance);
+	USplineLibrary::FollowSpline(Spline, Offset, Speed, TravelDistance, Delta, Inverse, OutLocation, OutRotation, TravelDistance);
 
 	this->Actor->SetActorLocationAndRotation(OutLocation, OutRotation, false, 0, ETeleportType::TeleportPhysics);
 }

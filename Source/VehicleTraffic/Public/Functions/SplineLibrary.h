@@ -23,18 +23,18 @@ class VEHICLETRAFFIC_API USplineLibrary : public UBlueprintFunctionLibrary
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "Vehicle Traffic\Spline Library")
-	static void GetDistanceAlongSplineAtLocation(const USplineComponent* spline, const FVector agentPosition, float& travelDistance);
+	static void GetClosestDistanceToLocation(const USplineComponent* Spline, const FVector ActorLocation, float& TravelDistance);
 
 	UFUNCTION(BlueprintCallable, Category = "Vehicle Traffic\Spline Library")
-	static void FollowPath(const USplineComponent* spline, const FVector offset, const float speed, const float distance, const float delta, const bool inverse,
-		FVector& outPosition, FRotator& outRotation, float& newDistance);
+	static void GetSplineDirection(const USplineComponent* Spline, const FVector ActorLocation, const FRotator ActorRotation,
+		float& TravelDistance, bool& InverseSpline);
 
 	UFUNCTION(BlueprintCallable, Category = "Vehicle Traffic\Spline Library")
-	static void GetPathDirection(const USplineComponent* spline, const FVector agentPosition, const FRotator agentRotation, 
-		float& travelDistance, bool& inverse);
+	static void FollowSpline(const USplineComponent* Spline, const FVector Offset, const float Speed, const float TravelDistance, const float DeltaTime, const bool InverseSpline,
+		FVector& OutLocation, FRotator& OutRotation, float& OutTravelDistance);
 
 	UFUNCTION(BlueprintCallable, Category = "Vehicle Traffic\Spline Library")
-	static void  CreateBezierTransition(const USplineComponent* Spline, FVector CurrentPosition, FRotator CurrentRotation, FVector Offset, float Speed, float CurveSmooth, bool GoRight,
+	static void  CreateBezierTransition(const USplineComponent* Spline, FVector ActorLocation, FRotator ActorRotation, FVector Offset, float Speed, float CurveSmooth, bool GoRight,
 		FBezierCurve& OutBezierCurve);
 
 	UFUNCTION(BlueprintCallable, Category = "Vehicle Traffic\Spline Library")

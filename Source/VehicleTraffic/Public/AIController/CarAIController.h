@@ -11,15 +11,12 @@
 #include "Pawn/VehicleBase.h"
 
 #include "Components/SplineComponent.h"
-#include "Blueprint/UserWidget.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "CarAIController.generated.h"
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTestDelegate, USplineComponent*, Spline);
 
 UENUM()
 enum class ECarState: uint8
@@ -37,8 +34,6 @@ class VEHICLETRAFFIC_API ACarAIController : public AAIController
 
 public:
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI")
-	TSubclassOf<UUserWidget> Widget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI")
 	UCarAIData* CarAIData;
 
@@ -75,15 +70,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Vehicle Traffic\Interfaces")
 	void OnExitDriftZone();
 
-	UPROPERTY(BlueprintAssignable, Category = "Test")
-	FTestDelegate OnTestDelegate;
-
 	UFUNCTION(BlueprintCallable, Category = "Test")
 	void OnOverlapBeginRoadDetector(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	void UpdateDesiredSpeed();
 
 	void Tick(float DeltaTime) override;
-	void MoveVehicle(float DeltaTime, float Speed);
-	void CalculateDriftAngle(float DeltaTime, float TravelDistance, bool InverseSpline);
+	void MoveVehicle(float Speed, float DeltaTime);
+	void CalculateDriftAngle(float Speed, float DeltaTime, float TravelDistance, bool InverseSpline);
 };

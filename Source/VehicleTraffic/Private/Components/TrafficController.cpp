@@ -7,30 +7,32 @@ UTrafficController::UTrafficController()
 
 void UTrafficController::BeginPlay()
 {
-	this->traffics = TArray<UTrafficLight*>();
+	Traffics = TArray<UTrafficLight*>();
+	CurrentIndex = -1;
 }
 
-void UTrafficController::AddTrafficLightActor(AActor* actor)
+void UTrafficController::AddTrafficLightActor(AActor* OwnerActor)
 {
-	if (actor == nullptr) 
-	{
-		throw "Null Reference";
-	}
+	if (!OwnerActor)
+		throw "Null Actor";
 
-	UTrafficLight* trafficLight = Cast<UTrafficLight>(actor->GetComponentByClass(UTrafficLight::StaticClass()));
+	UTrafficLight* TrafficLight = Cast<UTrafficLight>(OwnerActor->GetComponentByClass(UTrafficLight::StaticClass()));
 
-	if (trafficLight == nullptr)
-	{
-		throw "Null Component";
-	}
+	AddTrafficLight(TrafficLight);
+}
 
-	this->traffics.Add(trafficLight);
+void UTrafficController::AddTrafficLight(UTrafficLight* NewTrafficLight)
+{
+	if (!NewTrafficLight)
+		throw "Null TrafficLight";
+
+	Traffics.Add(NewTrafficLight);
 
 	// Check if has any TrafficLight open
-	if (!this->started)
+	if (CurrentIndex == -1)
 	{
-		this->started = true;
-		this->traffics[0]->Open();
+		CurrentIndex = 0;
+		Traffics[0]->Open();
 	}
 }
 
@@ -38,20 +40,21 @@ void UTrafficController::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (!this->started)
-		return;
+	if (CurrentIndex == -1)
+		throw "Missing Traffic Lights, you must add some";
 
 	// Check if the current is closed
-	if (this->traffics[this->currentIndex]->TrafficClosed())
+	if (Traffics[CurrentIndex]->TrafficClosed())
 	{
 		// Update index
-		this->currentIndex++;
+		CurrentIndex++;
 
-		if (this->currentIndex >= this->traffics.Num()) {
-			this->currentIndex = 0;
+		if (CurrentIndex >= Traffics.Num()) 
+		{
+			CurrentIndex = 0;
 		}
 
 		// Open next traffic light
-		this->traffics[currentIndex]->Open();
+		Traffics[CurrentIndex]->Open();
 	}
 }

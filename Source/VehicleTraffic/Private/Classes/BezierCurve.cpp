@@ -32,31 +32,31 @@ FVector FBezierCurve::GetTransitionPoint(float Transition)
 
 FVector FBezierCurve::CalculateCubicBezierPoint(float T, FVector P0, FVector P1, FVector P2, FVector P3)
 {
-    float u = 1 - T;
-    float uu = u * u;
-    float uuu = uu * u;
+    float U = 1 - T;
+    float UU = U * U;
+    float UUU = UU * U;
 
-    float tt = T * T;
-    float ttt = tt * T;
+    float TT = T * T;
+    float TTT = TT * T;
 
-    return (uuu * P0) + (3 * uu * T * P1) + (3 * u * tt * P2) + (ttt * P3);
+    return (UUU * P0) + (3 * UU * T * P1) + (3 * U * TT * P2) + (TTT * P3);
 }
 
 float FBezierCurve::CalculateCurveLength(int Resolution)
 {
-    float transitionSize = 1.f / Resolution;
-    float curveLength = 0;
-    FVector previousPosition = StartLocation;
+    float TransitionSize = 1.f / Resolution;
+    float CurveLength = 0;
+    FVector PreviousPosition = StartLocation;
 
-    for (int i = 1; i <= Resolution; i++)
+    for (size_t i = 1; i <= Resolution; i++)
     {
-        float t = i * transitionSize;
-        FVector newPosition = CalculateCubicBezierPoint(t, StartLocation, StartTangent, EndTangent, EndLocation);
-        curveLength += FVector::Distance(previousPosition, newPosition);
-        previousPosition = newPosition;
+        float t = i * TransitionSize;
+        FVector NewPoint = CalculateCubicBezierPoint(t, StartLocation, StartTangent, EndTangent, EndLocation);
+        CurveLength += FVector::Distance(PreviousPosition, NewPoint);
+        PreviousPosition = NewPoint;
     }
 
-    return curveLength;
+    return CurveLength;
 }
 
 FBezierCurve& FBezierCurve::operator=(const FBezierCurve& Other)

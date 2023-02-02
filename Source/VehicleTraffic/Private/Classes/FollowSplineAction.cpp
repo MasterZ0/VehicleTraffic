@@ -5,12 +5,12 @@
 
 void UFollowSplineAction::StartTask()
 {
-	USplineLibrary::GetPathDirection(Spline, Actor->GetActorLocation(), Actor->GetActorRotation(), TravelDistance, InverseSpline);
+	USplineLibrary::GetSplineDirection(Spline, Actor->GetActorLocation(), Actor->GetActorRotation(), TravelDistance, InverseSpline);
 }
 
 void UFollowSplineAction::TickTask(float Delta)
 {
-	USplineLibrary::FollowPath(Spline, Offset, Speed, TravelDistance, Delta, InverseSpline, ResultLocation, ResultRotation, TravelDistance);
+	USplineLibrary::FollowSpline(Spline, Offset, Speed, TravelDistance, Delta, InverseSpline, ResultLocation, ResultRotation, TravelDistance);
 }
 
 void UFollowSplineAction::RunFollowSpline(USplineComponent* InSpline, AActor* InActor, FVector InOffset, float InSpeed, ActionState& Branches, FVector& OutLocation, FRotator& OutRotation, float& OutTravelDistance, bool& OutInverseSpline)

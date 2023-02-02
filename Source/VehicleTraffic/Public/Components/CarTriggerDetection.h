@@ -13,9 +13,9 @@ class VEHICLETRAFFIC_API UCarTriggerDetection : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Vehicle Traffic\AI")
-	UBoxComponent* BoxComponent;
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Vehicle Traffic\AI")
+	UPrimitiveComponent* PrimitiveComponent;
 
 private:
 	TArray<AActor*> Obstacles;
@@ -28,11 +28,13 @@ public:
 
 	UTrafficLight* GetTrafficLight();
 
-	void OnComponentCreated() override;
-
 protected:
-	virtual void BeginPlay() override;
-
+	UFUNCTION()
 	void OnOverlapBeginFrontDetector(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
 	void OnOverlapEndFrontDetector(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+private:
+	void OnComponentCreated() override;
+	virtual void BeginPlay() override;
 };

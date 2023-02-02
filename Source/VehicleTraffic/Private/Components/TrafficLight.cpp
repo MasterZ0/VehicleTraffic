@@ -4,32 +4,46 @@
 UTrafficLight::UTrafficLight()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	PrimaryComponentTick.bStartWithTickEnabled = true;
-
-	this->timer = 0.0f;
-	this->trafficState = ETrafficState::Red;
+	TriggerComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Front Detector"));
 }
 
-void UTrafficLight::Init(UStaticMeshComponent* _red, UStaticMeshComponent* _yellow, UStaticMeshComponent* _green)
+void UTrafficLight::OnComponentCreated()
+{
+	Super::OnComponentCreated();
+
+	USceneComponent* Root = GetOwner()->GetRootComponent();
+
+	if (TriggerComponent)
+	{
+		TriggerComponent->SetupAttachment(Root);
+	}
+}
+
+void UTrafficLight::BeginPlay()
+{
+	TrafficState = ETrafficState::Red;
+}
+
+void UTrafficLight::Init(UStaticMeshComponent* InRed, UStaticMeshComponent* InYellow, UStaticMeshComponent* InGreen)
 {
 	// Inject objects
-	this->red = _red;
-	this->yellow = _yellow;
-	this->green = _green;
+	Red = InRed;
+	Yellow = InYellow;
+	Green = InGreen;
 
 	// Setup
-	this->currentLight = this->red;
+	CurrentLight = Red;
 }
 
 void UTrafficLight::Open()
 {
-	if (this->green == nullptr)
+	if (!Green)
 	{
-		throw "Null lights";
+		throw "UTrafficLight: Null lights";
 	}
 
-	this->timer = 0;
-	SwitchLight(green, ETrafficState::Green);
+	Timer = 0;
+	SwitchLight(Green, ETrafficState::Green);
 }
 
 void UTrafficLight::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -37,42 +51,42 @@ void UTrafficLight::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// Ignore red light
-	if (this->trafficState == ETrafficState::Red)
+	if (TrafficState == ETrafficState::Red)
 		return;
 
-	this->timer += DeltaTime;
+	Timer += DeltaTime;
 
 	// Check for next state
-	if (this->trafficState == ETrafficState::Green)
+	if (TrafficState == ETrafficState::Green)
 	{
-		if (this->timer >= this->greenDuration)
+		if (Timer >= GreenDuration)
 		{
-			SwitchLight(this->yellow, ETrafficState::Yellow);
+			SwitchLight(Yellow, ETrafficState::Yellow);
 		}
 	}
 	else // Yellow
 	{
-		if (this->timer >= this->greenDuration + this->yellowDuration)
+		if (Timer >= GreenDuration + YellowDuration)
 		{
-			SwitchLight(this->red, ETrafficState::Red);
+			SwitchLight(Red, ETrafficState::Red);
 		}
 	}
 }
 
-void UTrafficLight::SwitchLight(UStaticMeshComponent* newLight, ETrafficState state)
+void UTrafficLight::SwitchLight(UStaticMeshComponent* NewLight, ETrafficState State)
 {
-	this->trafficState = state;
-	this->currentLight->SetVisibility(false);
-	this->currentLight = newLight;
-	this->currentLight->SetVisibility(true);
+	TrafficState = State;
+	CurrentLight->SetVisibility(false);
+	CurrentLight = NewLight;
+	CurrentLight->SetVisibility(true);
 }
 
 ETrafficState UTrafficLight::GetTrafficState()
 {
-	return this->trafficState;
+	return TrafficState;
 }
 
 bool UTrafficLight::TrafficClosed()
 {
-	return this->trafficState == ETrafficState::Red;
+	return TrafficState == ETrafficState::Red;
 }

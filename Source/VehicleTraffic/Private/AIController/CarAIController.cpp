@@ -10,42 +10,42 @@ void ACarAIController::OnPossess(APawn* InPawn)
 
 	Vehicle = Cast<AVehicleBase>(InPawn);
 
-	if (Vehicle == nullptr || !IsValid(Widget))
+	if (Vehicle == nullptr)
 		return;
 
+	// Instantia Tasks
 	FollowSplineAction = NewObject<UFollowSplineAction>(this);
 	SwitchSplineAction = NewObject<USwitchSplineAction>(this);
 
 	// Set Fuel and Acceleration variables
-	Vehicle->SetFuelVariables(CarAIData->FuelConsumeMultiplier, CarAIData->MinFuelConsume, CarAIData->MaxFuel);
 	Vehicle->SetSpeedVariables(CarAIData->AccelerationMultiplier, CarAIData->DecelerationMultiplier);
-	Vehicle->AddFuel(CarAIData->MaxFuel);
+	Vehicle->SetFuelVariables(CarAIData->FuelConsumeMultiplier, CarAIData->MinFuelConsume, CarAIData->MaxFuel);
+	Vehicle->AddFuel(CarAIData->StartFuel);
 
 	// Attach to Vehicle and update position 
 	this->AttachToActor(Vehicle, FAttachmentTransformRules::KeepRelativeTransform);
 	this->SetInitialLocationAndRotation(Vehicle->GetActorLocation(), Vehicle->GetActorRotation());
 
-	UUserWidget* WidgetInstance = CreateWidget(GetWorld(), Widget);
-	WidgetInstance->AddToViewport();
+	// Get Dependencies
+	CarTriggerDetection = Cast<UCarTriggerDetection>(Vehicle->GetComponentByClass(UCarTriggerDetection::StaticClass()));
+
 }
 
 void ACarAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (!CurrentSpline)
+	if (!CurrentSpline || GetWorld()->IsPaused())
 		return;
 
 	// Update Speed
 	UpdateDesiredSpeed();
 	float Speed = Vehicle->GetSpeed();
 
-	// TODO: Update UI
-
-	MoveVehicle(DeltaTime, Speed);
+	MoveVehicle(Speed, DeltaTime);
 }
 
-void ACarAIController::MoveVehicle(float DeltaTime, float Speed)
+void ACarAIController::MoveVehicle(float Speed, float DeltaTime)
 {
 	FVector OutLocation;
 	FRotator OutRotation;
@@ -54,16 +54,16 @@ void ACarAIController::MoveVehicle(float DeltaTime, float Speed)
 		ActionState Branches;
 		float TravelDistance;
 		bool InverseSpline;
-		FollowSplineAction->RunFollowSpline(CurrentSpline, Vehicle, CarAIData->OffsetRoad, CarAIData->MoveSpeed, Branches, OutLocation, OutRotation, TravelDistance, InverseSpline);
+		FollowSplineAction->RunFollowSpline(CurrentSpline, Vehicle, CarAIData->OffsetRoad, Speed, Branches, OutLocation, OutRotation, TravelDistance, InverseSpline);
 
 		// Calculate Drift
-		CalculateDriftAngle(DeltaTime, TravelDistance, InverseSpline);
+		CalculateDriftAngle(Speed, DeltaTime, TravelDistance, InverseSpline);
 		OutRotation += FRotator(0, CurrentDriftDegree, 0);
 	}
 	else // Switch Spline
 	{
 		ActionState Branches;
-		SwitchSplineAction->RunSwitchSpline(CurrentSpline, Vehicle, CarAIData->OffsetRoad, CarAIData->MoveSpeed, CarAIData->CurveSmooth, Branches, OutLocation, OutRotation);
+		SwitchSplineAction->RunSwitchSpline(CurrentSpline, Vehicle, CarAIData->OffsetRoad, Speed, CarAIData->CurveSmooth, Branches, OutLocation, OutRotation);
 
 		if (Branches == ActionState::Success)
 		{
@@ -78,22 +78,20 @@ void ACarAIController::MoveVehicle(float DeltaTime, float Speed)
 	Vehicle->SetActorLocationAndRotation(OutLocation, OutRotation, false, nullptr, ETeleportType::TeleportPhysics);
 }
 
-void ACarAIController::CalculateDriftAngle(float DeltaTime, float TravelDistance, bool InverseSpline)
+void ACarAIController::CalculateDriftAngle(float Speed, float DeltaTime, float TravelDistance, bool InverseSpline)
 {
 	float DriftDegree = 0.f;
 	if (DriftZone)
 	{
-		USplineLibrary::CalculateDrift(CurrentSpline, TravelDistance, CarAIData->MoveSpeed * DeltaTime, CarAIData->MaxDriftRotation, InverseSpline, DriftDegree);
+		USplineLibrary::CalculateDrift(CurrentSpline, TravelDistance, Speed * DeltaTime, CarAIData->MaxDriftRotation, InverseSpline, DriftDegree);
 	}
 	CurrentDriftDegree = FMath::FInterpTo(CurrentDriftDegree, DriftDegree, DeltaTime, CarAIData->RotationSpeed);
 }
 
 void ACarAIController::UpdateDesiredSpeed()
 {
-	Vehicle->SetDesiredSpeed(CarAIData->MoveSpeed);
-	return;
 	float Speed = CarAIData->MoveSpeed;
-	bool HasObstacle;
+	bool HasObstacle = false;
 
 	// Traffic Light logic
 	UTrafficLight* TrafficLight = CarTriggerDetection->GetTrafficLight();
@@ -132,15 +130,17 @@ void ACarAIController::UpdateDesiredSpeed()
 
 void ACarAIController::OnOverlapBeginRoadDetector(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// Check if is initializated
+	// Check if can Switch Spline
 	float Time = GetWorld()->GetTimeSeconds();
 	if (NextSwitchSpline - Time > 0.f || SwitchSpline || !CurrentSpline)
 		return;
 
+	// Random chance to Switch Spline
 	bool Switch = FMath::RandRange(0, 100) < CarAIData->ChanceToSwitchSpline;
 	if (!Switch)
 		return;
 
+	// Get Component and check if is valid, and then update the Spline
 	USplineComponent* Component = Cast<USplineComponent>(OtherActor->GetComponentByClass(USplineComponent::StaticClass()));
 	if (IsValid(Component) && Component != CurrentSpline)
 	{
@@ -152,7 +152,7 @@ void ACarAIController::OnOverlapBeginRoadDetector(UPrimitiveComponent* Overlappe
 void ACarAIController::OnEnterDriftZone() 
 {
 	DriftZone = true;
-	// TODO: Check actor -> AddPoints(CarAIData->DriftPoints)
+	Vehicle->AddPoints(CarAIData->DriftPoints);
 }
 void ACarAIController::OnExitDriftZone() 
 {
