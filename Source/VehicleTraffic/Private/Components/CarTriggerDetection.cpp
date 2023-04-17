@@ -2,20 +2,18 @@
 
 #include "Components/CarTriggerDetection.h"
 
-UCarTriggerDetection::UCarTriggerDetection()
+UCarTriggerDetection::UCarTriggerDetection() 
 {
-	//PrimitiveComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Front Detector"));
+	PrimitiveComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("PrimitiveComponent"));
 }
 
 void UCarTriggerDetection::OnComponentCreated()
 {
 	Super::OnComponentCreated();
 
-	USceneComponent* Root = GetOwner()->GetRootComponent();
-
 	if (PrimitiveComponent) 
 	{
-		PrimitiveComponent->SetupAttachment(Root);
+		PrimitiveComponent->SetupAttachment(this);
 	}
 }
 

@@ -16,6 +16,15 @@
 				"UMG",
 				"CoreUObject"
 			]
+		},
+		{
+			"Name": "VehicleTrafficEditor",
+			"Type": "Editor",
+			"LoadingPhase": "PostEngineInit",
+			"AdditionalDependencies": [
+				"Engine",
+				"Blutility"
+			]
 		}
 	],
 	"Plugins": [

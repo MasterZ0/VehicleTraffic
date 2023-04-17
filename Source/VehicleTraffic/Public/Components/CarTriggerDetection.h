@@ -9,7 +9,7 @@
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class VEHICLETRAFFIC_API UCarTriggerDetection : public UActorComponent
+class VEHICLETRAFFIC_API UCarTriggerDetection : public USceneComponent
 {
 	GENERATED_BODY()
 

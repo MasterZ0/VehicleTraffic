@@ -2,6 +2,16 @@
 
 #include "AIController/CarAIController.h"
 
+#include "Data/CarAIData.h"
+#include "Classes/FollowSplineAction.h"
+#include "Classes/SwitchSplineAction.h"
+#include "Components/CarTriggerDetection.h"
+#include "Pawn/VehicleBase.h"
+
+#include "Components/SplineComponent.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "CoreMinimal.h"
+
 ACarAIController::ACarAIController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) { }
 
 void ACarAIController::OnPossess(APawn* InPawn)

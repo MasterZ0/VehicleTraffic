@@ -2,21 +2,15 @@
 
 #pragma once
 
-#include "Data/CarAIData.h"
-#include "Interfaces/Drift.h"
-#include "Classes/FollowSplineAction.h"
-#include "Classes/SwitchSplineAction.h"
-#include "Components/CarTriggerDetection.h"
-#include "Components/TrafficLight.h"
-#include "Pawn/VehicleBase.h"
-
-#include "Components/SplineComponent.h"
-#include "BehaviorTree/BehaviorTree.h"
-#include "BehaviorTree/BlackboardComponent.h"
-#include "BehaviorTree/BehaviorTreeComponent.h"
-#include "CoreMinimal.h"
 #include "AIController.h"
 #include "CarAIController.generated.h"
+
+class AVehicleBase;
+class UCarTriggerDetection;
+class UCarAIData;
+class USplineComponent;
+class UFollowSplineAction;
+class USwitchSplineAction;
 
 UENUM()
 enum class ECarState: uint8

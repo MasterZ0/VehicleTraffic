@@ -5,6 +5,23 @@
 AVehicleBase::AVehicleBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+    LeftWheelParticles = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("LeftWheelParticles"));
+    LeftWheelParticles->SetupAttachment(RootComponent);
+    LeftWheelParticles->SetAutoActivate(false);
+
+    RightWheelParticles = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("RightWheelParticles"));
+    RightWheelParticles->SetupAttachment(RootComponent);
+    RightWheelParticles->SetAutoActivate(false);
+
+    DriftZoneDetector = CreateDefaultSubobject<UBoxComponent>(TEXT("DriftZoneDetector"));
+    DriftZoneDetector->SetupAttachment(RootComponent);
+    DriftZoneDetector->bEditableWhenInherited = true;
+    RoadDetector = CreateDefaultSubobject<UBoxComponent>(TEXT("RoadDetector"));
+    RoadDetector->SetupAttachment(RootComponent);
+
+    //CarTriggerDetection = CreateDefaultSubobject<UCarTriggerDetection>(TEXT("CarTriggerDetection"));
+    //CarTriggerDetection->SetupAttachment(RootComponent);
 }
 
 void AVehicleBase::BeginPlay()

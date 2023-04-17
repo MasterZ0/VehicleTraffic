@@ -10,5 +10,6 @@ public class VehicleTrafficEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		ExtraModuleNames.Add("VehicleTraffic");
+		ExtraModuleNames.Add("VehicleTrafficEditor");
 	}
 }

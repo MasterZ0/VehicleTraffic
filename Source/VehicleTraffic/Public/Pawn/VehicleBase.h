@@ -5,6 +5,8 @@
 #include "Blueprint/UserWidget.h"
 #include "CoreMinimal.h"
 #include "WheeledVehicle.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Components/CarTriggerDetection.h"
 #include "VehicleBase.generated.h"
 
 UCLASS()
@@ -13,11 +15,23 @@ class VEHICLETRAFFIC_API AVehicleBase : public AWheeledVehicle
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	UPROPERTY(EditDefaultsOnly, Category = "Vehicle Base")
 	TSubclassOf<UUserWidget> Widget;
 
-	UPROPERTY(BlueprintReadOnly, Category = "AI")
+	UPROPERTY(BlueprintReadOnly, Category = "Vehicle Base")
 	UUserWidget* WidgetInstance;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vehicle Base")
+		UPrimitiveComponent* DriftZoneDetector;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vehicle Base")
+	UBoxComponent* RoadDetector;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Vehicle Base")
+	UParticleSystemComponent* LeftWheelParticles;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Vehicle Base")
+	UParticleSystemComponent* RightWheelParticles;
 
 private:
 	float FuelConsumeMultiplier;
